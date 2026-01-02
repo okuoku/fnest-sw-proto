@@ -1,10 +1,50 @@
 import {webgitForgejo} from "../webgit/forgejo.mjs";
 import {gitobjcache} from "./gitobjcache.mjs";
 
-let cfg = null;
-let stg = null;
+const repositories = {};
 
-async function run(){
+async function realize_repo(git, tree){
+    const repo = {};
+
+    async function itr(t){
+        const nodes = {};
+        const tree = await git.ref("tree", t);
+        for(const idx in tree.content){
+            const e = tree.content[idx];
+            const me = {type: "unknown"};
+            if(e.type == "tree"){
+                console.log("Enter", e.oid);
+                const subnodes = await itr(e.oid);
+                me.type = "dir";
+                me.nodes = subnodes;
+            }else if(e.type == "blob"){
+                me.type = "file";
+                me.oid = e.oid;
+            }else{
+                console.log("WARNING unknown node type", e);
+            }
+            nodes[e.name] = me;
+        }
+        return nodes;
+    }
+
+    const root = await itr(tree);
+    return {
+        type: "dir",
+        nodes: root
+    }
+}
+
+async function resolve_repo(webgit, git, refname){ // => tree
+    console.log("Resolving...", refname);
+    const ref = await webgit.ResolveRef(refname);
+    console.log("Ref", ref);
+    const commit = await git.ref("commit", ref);
+    console.log("Commit", commit);
+    return commit.tree;
+}
+
+async function run(cfg, stg){
     const uri = cfg[0].baseuri;
     const hdrs = cfg[0].headers;
     const repos = [];
@@ -13,32 +53,15 @@ async function run(){
         repos.push(idx);
     }
 
-    console.log("Loading refs/heads/master", repos[0]);
-
     const wg = webgitForgejo(uri, repos[0], hdrs);
     const git = gitobjcache(wg, stg.gitcache);
-    const ref = await wg.ResolveRef("refs/heads/master");
-    console.log("Ref", ref);
-    const commit = await git.ref("commit", ref);
-    console.log("Commit", commit);
-    async function itr(t){
-        console.log("Tree", t);
-        const tree = await git.ref("tree", t);
-        for(const idx in tree.content){
-            const e = tree.content[idx];
-            if(e.type == "tree"){
-                console.log("Enter", e.oid);
-                await itr(e.oid);
-            }
-        }
-    }
-    await itr(commit.tree);
+    const tree = await resolve_repo(wg, git, "refs/heads/master");
+    const repo = await realize_repo(git, tree);
+    console.log("Repotree", repo);
 }
 
 export function main(storage, config){
-    cfg = config;
-    stg = storage;
-    run();
+    run(config, storage);
     return async function message_callback(){
     }
 };
