@@ -1,4 +1,4 @@
-import sqlite3InitModule from "./build/sqlite3.mjs";
+import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 
 export async function FNestServiceWorkerMain(){
     const sqlite3 = await sqlite3InitModule();

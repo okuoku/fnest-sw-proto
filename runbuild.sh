@@ -1,2 +1,2 @@
 #!/bin/sh
-exec rollup -c
+exec npm exec -- rollup -c

@@ -1,3 +1,5 @@
+import {nodeResolve} from "@rollup/plugin-node-resolve";
+
 export default {
     input: 'root.mjs',
     output: {
@@ -5,6 +7,7 @@ export default {
         format: 'iife'
     },
     plugins:[
+        nodeResolve(),
         {
       name: 'sw-import-meta-url',
       resolveImportMeta(property, { /* chunkId , moduleId, format */ }) {
