@@ -3,5 +3,9 @@
         "@sqlite.org/sqlite-wasm": "3.50.4-build1",
         "@hono/node-server": "^1",
         "hono": "^4"
+    },
+    "devDependencies":{
+        "@rollup/plugin-node-resolve": "^16",
+        "rollup": "^4"
     }
 }
