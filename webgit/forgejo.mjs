@@ -66,7 +66,11 @@ export function webgitForgejo(baseurl, repository, headers){
                 }
             }
             async function get_blob(){
-                throw "unimpl";
+                const res0 = await request_repos("/git/blobs/", oid);
+                if(res0.encoding != "base64"){
+                    throw "Unknown encoding";
+                }
+                return atob(res0.content);
             }
             switch(type){
                 case "commit":

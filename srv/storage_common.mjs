@@ -80,7 +80,7 @@ export function storage_common_ops(sqlite3, db){
         set: function set(oid, type, obj){
             let blob = null;
             if(type == "blob"){
-                blob = blob;
+                blob = obj;
             }else{
                 blob = JSON.stringify(obj);
             }
