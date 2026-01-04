@@ -177,7 +177,7 @@ async function the_handler(req){
         const xmount = mounts[arr[2]];
         if(xmount){
             // 302 Redirect to _tree
-            const r = redirect(url, "TODO", arr);
+            const r = redirect(url, xmount.root_tree, arr);
             console.log("Redirect", r);
             return {
                 status: 302,
