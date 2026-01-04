@@ -3,7 +3,20 @@ export function webgitForgejo(baseurl, repository, headers){
     async function request_repos(api, param){
         const uri = prefix + "repos/" + repository + "/" + api + param;
         const res = await fetch(uri, { headers });
-        return await res.json();
+        const json = await res.json();
+        return json;
+    }
+    async function request_rawblob(tree, path){
+        const uri = prefix + "repos/" + repository + "/raw" + path +"?ref=" + tree;
+        const res = await fetch(uri, { headers });
+        console.log("REQUEST RAWBLOB", uri);
+        if(res.ok){
+            const bytes = await res.bytes();
+            return bytes;
+        }else{
+            console.log("... failed", res);
+            return false;
+        }
     }
     return {
         Ping: async function(){
@@ -24,9 +37,9 @@ export function webgitForgejo(baseurl, repository, headers){
             }
         },
         CreateView: async function(commit){
-            throw "unimpl";
             return {
                 Fetch: async function(path){
+                    return await request_rawblob(commit, path);
                 }
             }
         },
@@ -70,7 +83,13 @@ export function webgitForgejo(baseurl, repository, headers){
                 if(res0.encoding != "base64"){
                     throw "Unknown encoding";
                 }
-                return atob(res0.content);
+                if(res0.content == "" && res0.size != 0){
+                    // Large blob may be returned with null string...
+                    // Fall back to raw fetch
+                    return false;
+                }else{
+                    return atob(res0.content);
+                }
             }
             switch(type){
                 case "commit":

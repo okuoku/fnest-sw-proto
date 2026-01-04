@@ -35,15 +35,6 @@ async function realize_repo(git, tree){
     }
 }
 
-async function resolve_repo(webgit, git, refname){ // => tree
-    console.log("Resolving...", refname);
-    const ref = await webgit.ResolveRef(refname);
-    console.log("Ref", ref);
-    const commit = await git.ref("commit", ref);
-    console.log("Commit", commit);
-    return commit.tree;
-}
-
 async function init(cfg, stg){
     const uri = cfg[0].baseuri;
     const hdrs = cfg[0].headers;
@@ -55,10 +46,13 @@ async function init(cfg, stg){
 
     const wg = webgitForgejo(uri, repos[0].reponame, hdrs);
     const git = gitobjcache(wg, stg.gitcache);
-    const tree = await resolve_repo(wg, git, "refs/heads/master");
-    const repo = await realize_repo(git, tree);
-    repo.root_tree = tree;
+    const commit_sha = await wg.ResolveRef("refs/heads/master");
+    const commit = await git.ref("commit", commit_sha);
+    const repo = await realize_repo(git, commit.tree);
+    const view = await wg.CreateView(commit_sha);
+    repo.root_tree = commit_sha;
     repo.root_git = git;
+    repo.root_view = view;
     mounts[repos[0].opts.mount] = repo;
     console.log("Mounts", mounts);
 }
@@ -188,23 +182,37 @@ async function the_handler(req){
             }
         }else if(arr[2] === "_tree"){
             // FIXME: Ignores tree OID in url
-            // 3: Mount
-            // 4: Oid
             const ymount = mounts[arr[3]];
             if(ymount){
-                const oid = lookup(ymount.nodes, arr.slice(5));
+                const apth = arr.slice(5);
+                const oid = lookup(ymount.nodes, apth);
                 const mime = exttype(arr.at(-1));
                 const git = ymount.root_git;
+                const view = ymount.root_view;
                 if(oid){
                     console.log("OK", arr, oid, mime);
-                    /* Cache for 1year, never re-request */
                     const v = await git.ref("blob", oid);
-                    return {
-                        status: 200,
-                        data: v,
-                        headers: {
-                            "Cache-Control": "private, max-age=31536000, immutable",
-                            "Content-Type": mime
+                    if(!v){
+                        const pth = "/" + apth.join("/");
+                        const b = await view.Fetch(pth);
+                        /* Result is not cachable to local DB (large blob) */
+                        return {
+                            status: 200,
+                            data: b,
+                            headers: {
+                                "Cache-Control": "private, max-age=31536000, immutable",
+                                "Content-Type": mime
+                            }
+                        }
+                    }else{
+                        /* Cache for 1year, never re-request */
+                        return {
+                            status: 200,
+                            data: v,
+                            headers: {
+                                "Cache-Control": "private, max-age=31536000, immutable",
+                                "Content-Type": mime
+                            }
                         }
                     }
                 }else{
