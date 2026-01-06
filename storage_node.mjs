@@ -40,7 +40,7 @@ export async function storage() {
         }
     }
 
-    const ops = storage_common_ops(sqlite3, db);
+    const ops = await storage_common_ops(sqlite3, db);
     async function terminate(){ /* Node.js only */
         const wbuf = savedb(sqlite3, db);
         console.log("(node-stub) Terminating storage...");

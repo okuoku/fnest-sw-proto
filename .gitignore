@@ -1,5 +1,6 @@
 /node_modules/
 /build/
+/sw.js
 *.wasm
 /testconfig.json
 /state.db

@@ -2,7 +2,10 @@ export function gitobjcache(webgit, gitcache){
     return {
         ref: async function(type, oid){
             let ret;
-            ret = gitcache.ref(oid);
+            console.log("Cache REF...", oid);
+            const pret = gitcache.ref(oid);
+            console.log("Cache REF done", oid, pret);
+            ret = await pret;
             if(ret){
                 console.log("Cache hit", type, oid);
                 if(type == "blob"){
@@ -16,7 +19,7 @@ export function gitobjcache(webgit, gitcache){
                     if(obj0.raw){
                         delete obj0.raw;
                     }
-                    gitcache.set(oid, type, obj0);
+                    await gitcache.set(oid, type, obj0);
                     console.log("Save", type, oid);
                 }
                 return obj0;

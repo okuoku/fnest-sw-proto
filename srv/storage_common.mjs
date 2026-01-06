@@ -33,7 +33,7 @@ ON CONFLICT(oid) DO UPDATE SET
   dat=excluded.dat
 `;
 
-export function storage_common_ops(sqlite3, db){
+export async function storage_common_ops(sqlite3, db){
     /* make sure tables exist before preparing statements */
     db.exec(sql_sysdata_init);
     db.exec(sql_gitcache_init);
@@ -52,7 +52,7 @@ export function storage_common_ops(sqlite3, db){
     }
 
     const gitcache = {
-        ref: function ref(oid){
+        ref: async function ref(oid){
             let type = null;
             let obj = null;
             stmt_gitcache_ref.reset(true);
@@ -77,7 +77,7 @@ export function storage_common_ops(sqlite3, db){
                 return false;
             }
         },
-        set: function set(oid, type, obj){
+        set: async function set(oid, type, obj){
             let blob = null;
             if(type == "blob"){
                 blob = obj;
@@ -91,7 +91,7 @@ export function storage_common_ops(sqlite3, db){
             stmt_gitcache_set.step();
             stmt_gitcache_set.reset(true);
         },
-        del: function del(oid){
+        del: async function del(oid){
             stmt_gitcache_del.reset(true);
             stmt_gitcache_del.bind(1, oid);
             stmt_gitcache_del.step();

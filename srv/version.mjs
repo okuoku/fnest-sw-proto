@@ -1,0 +1,1 @@
+export const FNEST_SW_VERSION = 20260104_00;

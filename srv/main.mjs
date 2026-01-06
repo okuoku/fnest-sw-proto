@@ -36,6 +36,7 @@ async function realize_repo(git, tree){
 }
 
 async function init(cfg, stg){
+    console.log("srv Init", cfg, stg);
     const uri = cfg[0].baseuri;
     const hdrs = cfg[0].headers;
     const repos = [];
@@ -46,8 +47,11 @@ async function init(cfg, stg){
 
     const wg = webgitForgejo(uri, repos[0].reponame, hdrs);
     const git = gitobjcache(wg, stg.gitcache);
+    console.log("srv Resolving...");
     const commit_sha = await wg.ResolveRef("refs/heads/master");
+    console.log("srv Resolved", commit_sha);
     const commit = await git.ref("commit", commit_sha);
+    console.log("srv Commit", commit);
     const repo = await realize_repo(git, commit.tree);
     const view = await wg.CreateView(commit_sha);
     repo.root_tree = commit_sha;

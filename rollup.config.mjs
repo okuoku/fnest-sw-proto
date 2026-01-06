@@ -1,9 +1,9 @@
 import {nodeResolve} from "@rollup/plugin-node-resolve";
 
 export default {
-    input: 'root.mjs',
+    input: 'sw.mjs',
     output: {
-        file: 'build/sw.js',
+        file: 'sw.js',
         format: 'iife'
     },
     plugins:[
