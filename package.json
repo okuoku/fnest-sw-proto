@@ -1,11 +1,17 @@
 {
     "dependencies":{
+        "@fluentui/react-components": "^9",
+        "@fluentui/react-icons": "^2",
+
         "@sqlite.org/sqlite-wasm": "3.50.4-build1",
         "@hono/node-server": "^1",
         "hono": "^4"
     },
     "devDependencies":{
+        "@rollup/plugin-commonjs": "^29",
         "@rollup/plugin-node-resolve": "^16",
+        "@rollup/plugin-alias": "^6",
+        "@rollup/plugin-replace": "^6",
         "rollup": "^4"
     }
 }
