@@ -1,6 +1,7 @@
 /* Re-Exports */
 export {Text,Button,Tooltip,
     Menu,MenuTrigger,MenuItem,MenuPopover,
+    Divider,
     makeStyles, tokens
 } from "@fluentui/react-components";
 export {GridDotsRegular,WrenchRegular,
